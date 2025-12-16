@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.2">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;Hand Controlled 3D Particle System&lt;/title&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>body {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>overflow: hidden;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>background: black;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>video {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>display: none;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;video id="video" autoplay playsinline&gt;&lt;/video&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- Three.js --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"&gt;&lt;/script&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- MediaPipe Hands --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"&gt;&lt;/script&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* ==========================</p>
+<p class="p1"><span class="Apple-converted-space">       </span>THREE.JS SETUP</p>
+<p class="p1"><span class="Apple-converted-space">    </span>========================== */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const scene = new THREE.Scene();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const camera = new THREE.PerspectiveCamera(</p>
+<p class="p1"><span class="Apple-converted-space">      </span>60,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>window.innerWidth / window.innerHeight,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>0.1,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>1000</p>
+<p class="p1"><span class="Apple-converted-space">    </span>);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>camera.position.z = 5;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const renderer = new THREE.WebGLRenderer({ antialias: true });</p>
+<p class="p1"><span class="Apple-converted-space">    </span>renderer.setSize(window.innerWidth, window.innerHeight);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>document.body.appendChild(renderer.domElement);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* ==========================</p>
+<p class="p1"><span class="Apple-converted-space">       </span>PARTICLES</p>
+<p class="p1"><span class="Apple-converted-space">    </span>========================== */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const COUNT = 6000;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const geometry = new THREE.BufferGeometry();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const positions = new Float32Array(COUNT * 3);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>for (let i = 0; i &lt; COUNT; i++) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>positions[i * 3] <span class="Apple-converted-space">    </span>= (Math.random() - 0.5) * 2;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>positions[i * 3 + 1] = (Math.random() - 0.5) * 2;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>positions[i * 3 + 2] = (Math.random() - 0.5) * 2;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>geometry.setAttribute(</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"position",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>new THREE.BufferAttribute(positions, 3)</p>
+<p class="p1"><span class="Apple-converted-space">    </span>);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const material = new THREE.PointsMaterial({</p>
+<p class="p1"><span class="Apple-converted-space">      </span>color: 0x3399ff, <span class="Apple-converted-space">  </span>// 🔵 BLUE PARTICLES</p>
+<p class="p1"><span class="Apple-converted-space">      </span>size: 0.025</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const particles = new THREE.Points(geometry, material);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>scene.add(particles);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* ==========================</p>
+<p class="p1"><span class="Apple-converted-space">       </span>SHAPES</p>
+<p class="p1"><span class="Apple-converted-space">    </span>========================== */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function heartShape(i, scale) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const t = (i / COUNT) * Math.PI * 2;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>x: scale * 0.16 * Math.pow(Math.sin(t), 3),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>y: scale * (</p>
+<p class="p1"><span class="Apple-converted-space">          </span>0.13 * Math.cos(t) -</p>
+<p class="p1"><span class="Apple-converted-space">          </span>0.05 * Math.cos(2 * t) -</p>
+<p class="p1"><span class="Apple-converted-space">          </span>0.02 * Math.cos(3 * t) -</p>
+<p class="p1"><span class="Apple-converted-space">          </span>0.01 * Math.cos(4 * t)</p>
+<p class="p1"><span class="Apple-converted-space">        </span>),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>z: 0</p>
+<p class="p1"><span class="Apple-converted-space">      </span>};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function flowerShape(i, scale) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const t = (i / COUNT) * Math.PI * 2;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const r = Math.sin(6 * t) * 0.4 + 1;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>x: scale * r * Math.cos(t),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>y: scale * r * Math.sin(t),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>z: 0</p>
+<p class="p1"><span class="Apple-converted-space">      </span>};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* ==========================</p>
+<p class="p1"><span class="Apple-converted-space">       </span>MORPHING</p>
+<p class="p1"><span class="Apple-converted-space">    </span>========================== */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let targetShape = "heart";</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let expansion = 1;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function updateParticles() {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const pos = geometry.attributes.position.array;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>for (let i = 0; i &lt; COUNT; i++) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const p =</p>
+<p class="p1"><span class="Apple-converted-space">          </span>targetShape === "heart"</p>
+<p class="p1"><span class="Apple-converted-space">            </span>? heartShape(i, expansion)</p>
+<p class="p1"><span class="Apple-converted-space">            </span>: flowerShape(i, expansion);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>pos[i * 3] <span class="Apple-converted-space">    </span>+= (p.x - pos[i * 3]) * 0.06;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pos[i * 3 + 1] += (p.y - pos[i * 3 + 1]) * 0.06;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pos[i * 3 + 2] += (p.z - pos[i * 3 + 2]) * 0.06;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>geometry.attributes.position.needsUpdate = true;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* ==========================</p>
+<p class="p1"><span class="Apple-converted-space">       </span>HAND TRACKING</p>
+<p class="p1"><span class="Apple-converted-space">    </span>========================== */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const hands = new Hands({</p>
+<p class="p1"><span class="Apple-converted-space">      </span>locateFile: file =&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>hands.setOptions({</p>
+<p class="p1"><span class="Apple-converted-space">      </span>maxNumHands: 1,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>minDetectionConfidence: 0.7,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>minTrackingConfidence: 0.7</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>let lastSwitch = 0;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>hands.onResults(results =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (!results.multiHandLandmarks.length) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>const lm = results.multiHandLandmarks[0];</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const thumbTip = lm[4];</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const indexTip = lm[8];</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const palm = lm[0];</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>// 🤏 PINCH = CHANGE SHAPE</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const pinch = Math.hypot(</p>
+<p class="p1"><span class="Apple-converted-space">        </span>thumbTip.x - indexTip.x,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>thumbTip.y - indexTip.y</p>
+<p class="p1"><span class="Apple-converted-space">      </span>);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>const now = Date.now();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (pinch &lt; 0.04 &amp;&amp; now - lastSwitch &gt; 800) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>targetShape = targetShape === "heart" ? "flower" : "heart";</p>
+<p class="p1"><span class="Apple-converted-space">        </span>lastSwitch = now;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>// ✋ OPEN HAND = EXPAND</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const openness = Math.abs(indexTip.y - palm.y);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>expansion = THREE.MathUtils.clamp(openness * 4, 0.6, 2.3);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* ==========================</p>
+<p class="p1"><span class="Apple-converted-space">       </span>CAMERA INPUT</p>
+<p class="p1"><span class="Apple-converted-space">    </span>========================== */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const video = document.getElementById("video");</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const cam = new Camera(video, {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>onFrame: async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>await hands.send({ image: video });</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>width: 640,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>height: 480</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>cam.start();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* ==========================</p>
+<p class="p1"><span class="Apple-converted-space">       </span>ANIMATION LOOP</p>
+<p class="p1"><span class="Apple-converted-space">    </span>========================== */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function animate() {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>requestAnimationFrame(animate);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>updateParticles();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>particles.rotation.y += 0.002;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>renderer.render(scene, camera);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>animate();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* ==========================</p>
+<p class="p1"><span class="Apple-converted-space">       </span>RESIZE</p>
+<p class="p1"><span class="Apple-converted-space">    </span>========================== */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>window.addEventListener("resize", () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>camera.aspect = window.innerWidth / window.innerHeight;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>camera.updateProjectionMatrix();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>renderer.setSize(window.innerWidth, window.innerHeight);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
